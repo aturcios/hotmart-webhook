@@ -164,12 +164,20 @@ export default function App() {
   const [auth, setAuth] = useState(() => localStorage.getItem("dash_auth") === "1");
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [started, setStarted] = useState(false);
-  const [currentDay, setCurrentDay] = useState(1);
-  const [completed, setCompleted] = useState({});
+  const [currentDay, setCurrentDay] = useState(() => {
+    const diff = Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86400000);
+    return Math.min(Math.max(diff + 1, 1), 30);
+  });
+  const [completed, setCompleted] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("dash_completed") || "{}"); }
+    catch { return {}; }
+  });
   const [view, setView] = useState("day");
   const countdown = useCountdown(LAUNCH_DATE.getTime());
+
+  // today = how many days have passed since April 1st (min 1, max 30)
+  const today = Math.min(Math.max(Math.floor((Date.now() - LAUNCH_DATE.getTime()) / 86400000) + 1, 1), 30);
+  const isPastDay = currentDay < today;
 
   function submitPassword() {
     if (pwInput === PASSWORD) {
@@ -194,8 +202,16 @@ export default function App() {
     });
   }
 
+  function toggleTask(id) {
+    setCompleted(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      localStorage.setItem("dash_completed", JSON.stringify(next));
+      return next;
+    });
+  }
+
   useEffect(() => {
-    if (!started) return;
+    if (!auth) return;
     let active = true;
 
     async function fetchSales() {
@@ -219,18 +235,26 @@ export default function App() {
     fetchSales();
     const interval = setInterval(fetchSales, POLL_INTERVAL);
     return () => { active = false; clearInterval(interval); };
-  }, [started]);
+  }, [auth]);
 
-  const endDate = startDate ? addDays(new Date(startDate), 29) : null;
-  const today = startDate ? (() => {
-    const diff = Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000);
-    return Math.min(Math.max(diff + 1, 1), 30);
-  })() : 1;
+  const endDate = addDays(LAUNCH_DATE, 29);
+  const tasks = getTasksForDay(currentDay);
 
-  const tasks = started ? getTasksForDay(currentDay) : [];
-
-  function toggleTask(id) {
-    setCompleted(prev => ({ ...prev, [id]: !prev[id] }));
+  // Incomplete tasks on past days
+  function getPastIncomplete() {
+    const warnings = [];
+    for (let d = 1; d < today; d++) {
+      const dayTasks = getTasksForDay(d);
+      const missed = dayTasks.filter(t => !completed[t.id]);
+      if (missed.length > 0) {
+        const byMember = MEMBERS.map(m => ({
+          ...m,
+          missed: missed.filter(t => t.member === m.id)
+        })).filter(m => m.missed.length > 0);
+        warnings.push({ day: d, date: addDays(LAUNCH_DATE, d - 1), byMember, total: missed.length });
+      }
+    }
+    return warnings;
   }
 
   function memberProgress(memberId) {
@@ -300,27 +324,7 @@ export default function App() {
     );
   }
 
-  if (!started) {
-    return (
-      <div style={{ maxWidth: 480, margin: "2rem auto", padding: "0 1rem" }}>
-        <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", padding: "2rem" }}>
-          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#185FA5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 500, color: "var(--color-text-primary)" }}>Dashboard de Campaña</h2>
-          <p style={{ margin: "0 0 1.5rem", fontSize: 14, color: "var(--color-text-secondary)" }}>Mecánica de Motos VIP — Equipo Afiliado</p>
-          <label style={{ fontSize: 13, color: "var(--color-text-secondary)", display: "block", marginBottom: 6 }}>Fecha de inicio de la campaña</label>
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ marginBottom: "1rem" }} />
-          <button onClick={() => { if (startDate) setStarted(true); }}
-            style={{ width: "100%", padding: "10px", background: "#185FA5", color: "#fff", border: "none", borderRadius: "var(--border-radius-md)", fontSize: 14, fontWeight: 500 }}>
-            Iniciar campaña
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const start = new Date(startDate);
+  const pastIncomplete = getPastIncomplete();
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "1rem" }}>
@@ -329,7 +333,7 @@ export default function App() {
         <div>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 500, color: "var(--color-text-primary)" }}>Mecánica de Motos VIP</h2>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--color-text-secondary)" }}>
-            {fmt(start)} → {fmt(endDate)} &nbsp;·&nbsp; Día {today} de 30
+            {fmt(LAUNCH_DATE)} → {fmt(endDate)} &nbsp;·&nbsp; Día {today} de 30
           </p>
         </div>
         <div style={{ fontSize: 12, color: "var(--color-text-tertiary)", textAlign: "right" }}>
@@ -361,6 +365,26 @@ export default function App() {
           </div>
         ))}
       </div>
+
+      {/* Past incomplete alerts summary */}
+      {pastIncomplete.length > 0 && (
+        <div style={{ background: "#FFF8E6", border: "1px solid #F6C343", borderRadius: 8, padding: "12px 16px", marginBottom: "1rem" }}>
+          <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#92600A" }}>
+            ⚠ {pastIncomplete.reduce((s, w) => s + w.total, 0)} tarea(s) sin completar en días anteriores
+          </p>
+          {pastIncomplete.map(w => (
+            <div key={w.day} style={{ marginBottom: 6 }}>
+              <button onClick={() => { setCurrentDay(w.day); setView("day"); }}
+                style={{ fontSize: 12, fontWeight: 600, color: "#92600A", background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline" }}>
+                Día {w.day} — {fmt(w.date)}
+              </button>
+              {w.byMember.map(m => (
+                <span key={m.id} style={{ marginLeft: 8, fontSize: 12, color: "#92600A" }}>{m.name}: {m.missed.length}</span>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Recent sales */}
       {salesData.sales.length > 0 && (
@@ -395,13 +419,29 @@ export default function App() {
 
       {view === "day" && (
         <>
+          {/* Past-day incomplete warning banner */}
+          {isPastDay && tasks.some(t => !completed[t.id]) && (
+            <div style={{ background: "#FFF8E6", border: "1px solid #F6C343", borderRadius: 8, padding: "10px 14px", marginBottom: "1rem" }}>
+              <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, color: "#92600A" }}>
+                ⚠ Tareas sin completar — Día {currentDay} ({fmt(addDays(LAUNCH_DATE, currentDay - 1))})
+              </p>
+              {MEMBERS.filter(m => tasks.some(t => t.member === m.id && !completed[t.id])).map(m => (
+                <p key={m.id} style={{ margin: "2px 0", fontSize: 12, color: "#92600A" }}>
+                  · <strong>{m.name}</strong>: {tasks.filter(t => t.member === m.id && !completed[t.id]).length} tarea(s) pendiente(s)
+                </p>
+              ))}
+            </div>
+          )}
+
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem" }}>
             <button onClick={() => setCurrentDay(d => Math.max(1, d - 1))} style={{ padding: "4px 12px" }}>←</button>
             <div style={{ flex: 1, textAlign: "center" }}>
-              <span style={{ fontWeight: 500, fontSize: 15 }}>Día {currentDay} — {fmt(addDays(start, currentDay - 1))}</span>
-              <span style={{ marginLeft: 8, fontSize: 12, color: "var(--color-text-secondary)" }}>
+              <span style={{ fontWeight: 500, fontSize: 15 }}>Día {currentDay} — {fmt(addDays(LAUNCH_DATE, currentDay - 1))}</span>
+              {currentDay === today && <span style={{ marginLeft: 8, fontSize: 11, background: "#185FA5", color: "#fff", borderRadius: 10, padding: "1px 7px" }}>hoy</span>}
+              {isPastDay && <span style={{ marginLeft: 8, fontSize: 11, background: "#F6C343", color: "#92600A", borderRadius: 10, padding: "1px 7px" }}>pasado</span>}
+              <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginTop: 2 }}>
                 {WEEK_TASKS[Math.min(Math.floor((currentDay - 1) / 7), 3)].label}
-              </span>
+              </div>
             </div>
             <button onClick={() => setCurrentDay(d => Math.min(30, d + 1))} style={{ padding: "4px 12px" }}>→</button>
           </div>

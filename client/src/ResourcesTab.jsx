@@ -1,5 +1,3 @@
-import { LINKS } from "./data";
-
 const HASHTAGS = [
   { platform: "Facebook",  color: "#1877F2", bg: "#E7F0FD", tags: "#motos #mecanicamotos #motociclismo #tallerdemotos #mantenimientomoto #aprendemecanica #moteros #motocicletas #motolife #bikers" },
   { platform: "Instagram", color: "#E1306C", bg: "#FCE8F0", tags: "#mecanicamotos #motos #motolife #moteros #tutorial #aprendeeninstagram #mecanicoamateur #mantenimiento #motociclismo #reels" },
@@ -50,26 +48,6 @@ const CONTENT_IDEAS = [
 export default function ResourcesTab({ copied, onCopy }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-      {/* Affiliate Links */}
-      <section>
-        <h3 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600, color: "#111" }}>Links de afiliado</h3>
-        {LINKS.map(link => (
-          <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", border: `0.5px solid ${link.highlight ? "#185FA5" : "#e8e8e8"}`, borderRadius: 10, padding: "10px 14px", marginBottom: 7, textDecoration: "none", gap: 12 }}>
-            <div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: link.highlight ? 500 : 400, color: link.highlight ? "#185FA5" : "#222" }}>{link.label}</p>
-              {link.note && <p style={{ margin: "2px 0 0", fontSize: 11, color: "#999" }}>{link.note}</p>}
-            </div>
-            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-              <button onClick={e => { e.preventDefault(); onCopy(link.url); }}
-                style={{ padding: "3px 9px", fontSize: 11, background: copied === link.url ? "#1D9E75" : "#f0f0f0", color: copied === link.url ? "#fff" : "#555", border: "none", borderRadius: 4, cursor: "pointer" }}>
-                {copied === link.url ? "Copiado" : "Copiar"}
-              </button>
-            </div>
-          </a>
-        ))}
-      </section>
 
       {/* Hashtags */}
       <section>

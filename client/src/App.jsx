@@ -155,7 +155,6 @@ export default function App() {
   const [salesData, setSalesData] = useState({ count: 0, totalRevenue: 0, totalCommission: 0, sales: [] });
   const [salesLoading, setSalesLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [social, setSocial] = useState({ youtube: null });
   const [copied, setCopied] = useState(null);
 
   function copyLink(url) {
@@ -187,18 +186,9 @@ export default function App() {
       }
     }
 
-    async function fetchSocial() {
-      try {
-        const res = await fetch("/api/social");
-        if (res.ok && active) setSocial(await res.json());
-      } catch (_) {}
-    }
-
     fetchSales();
-    fetchSocial();
     const interval = setInterval(fetchSales, POLL_INTERVAL);
-    const socialInterval = setInterval(fetchSocial, 5 * 60 * 1000); // every 5 min
-    return () => { active = false; clearInterval(interval); clearInterval(socialInterval); };
+    return () => { active = false; clearInterval(interval); };
   }, [started]);
 
   const endDate = startDate ? addDays(new Date(startDate), 29) : null;
@@ -278,17 +268,16 @@ export default function App() {
       </div>
 
       {/* Metric cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 10, marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 10, marginBottom: "1rem" }}>
         {[
           { label: "Día actual", value: currentDay },
           { label: "Ventas reales", value: salesData.count },
           { label: "Ingresos totales", value: `$${salesData.totalRevenue.toFixed(2)}` },
-          { label: "Mis comisiones", value: `$${salesData.totalCommission.toFixed(2)}` },
-          { label: "Subs YouTube", value: social.youtube !== null ? social.youtube.toLocaleString("es-HN") : "—", accent: "#FF0000" }
+          { label: "Mis comisiones", value: `$${salesData.totalCommission.toFixed(2)}` }
         ].map(c => (
           <div key={c.label} style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "10px 12px" }}>
             <p style={{ margin: 0, fontSize: 12, color: "var(--color-text-secondary)" }}>{c.label}</p>
-            <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 500, color: c.accent || "var(--color-text-primary)" }}>{c.value}</p>
+            <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 500, color: "var(--color-text-primary)" }}>{c.value}</p>
           </div>
         ))}
       </div>

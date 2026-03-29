@@ -155,6 +155,14 @@ export default function App() {
   const [salesData, setSalesData] = useState({ count: 0, totalRevenue: 0, totalCommission: 0, sales: [] });
   const [salesLoading, setSalesLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [copied, setCopied] = useState(null);
+
+  function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(url);
+      setTimeout(() => setCopied(null), 1500);
+    });
+  }
 
   useEffect(() => {
     if (!started) return;
@@ -398,7 +406,13 @@ export default function App() {
                 <p style={{ margin: 0, fontSize: 13, fontWeight: link.highlight ? 500 : 400, color: link.highlight ? "#185FA5" : "var(--color-text-primary)" }}>{link.label}</p>
                 {link.note && <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--color-text-tertiary)" }}>{link.note}</p>}
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <button onClick={e => { e.preventDefault(); copyLink(link.url); }}
+                  style={{ padding: "4px 10px", fontSize: 11, background: copied === link.url ? "#1D9E75" : "#f0f0f0", color: copied === link.url ? "#fff" : "#555", border: "none", borderRadius: 4 }}>
+                  {copied === link.url ? "Copiado" : "Copiar"}
+                </button>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ alignSelf: "center" }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
             </a>
           ))}
         </div>

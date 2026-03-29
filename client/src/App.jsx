@@ -3,6 +3,20 @@ import { useState, useEffect } from "react";
 const API = "/api/sales";
 const POLL_INTERVAL = 30000; // 30 seconds
 
+const LINKS = [
+  { label: "VSL — Público frío (recomendado)", url: "https://go.hotmart.com/D105102229U?ap=5050", highlight: true },
+  { label: "Página de ventas", url: "https://go.hotmart.com/D105102229U" },
+  { label: "Checkout personalizado", url: "https://go.hotmart.com/D105102229U?ap=bbb0" },
+  { label: "Checkout 85% descuento", url: "https://go.hotmart.com/D105102229U?ap=0c9d" },
+  { label: "Checkout limpio", url: "https://go.hotmart.com/D105102229U?ap=4d3f" },
+  { label: "Plan $29 (downsell)", url: "https://go.hotmart.com/D105102229U?ap=34a5", note: "Solo si vio la oferta principal y no compró" },
+  { label: "Testimonios", url: "https://go.hotmart.com/D105102229U?ap=307b" },
+  { label: "Contenido detallado", url: "https://go.hotmart.com/D105102229U?ap=c186" },
+  { label: "Paneo plataforma", url: "https://go.hotmart.com/D105102229U?ap=7b13" },
+  { label: "Página de producto", url: "https://go.hotmart.com/D105102229U?dp=1" },
+  { label: "Materiales promocionales (Drive)", url: "https://drive.google.com/drive/folders/10mnoll5hXgQjtp1id8jHRHHQjRYxEHhf", highlight: true },
+];
+
 const MEMBERS = [
   {
     id: 0, name: "Líder", initials: "LI", color: "#185FA5", bg: "#E6F1FB",
@@ -283,10 +297,10 @@ export default function App() {
 
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: "1rem" }}>
-        {["day", "overview"].map(v => (
+        {[["day", "Vista diaria"], ["overview", "Vista equipo"], ["links", "Links"]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)}
             style={{ padding: "6px 16px", fontSize: 13, background: view === v ? "#185FA5" : "transparent", color: view === v ? "#fff" : "var(--color-text-secondary)", border: `0.5px solid ${view === v ? "#185FA5" : "var(--color-border-secondary)"}`, borderRadius: "var(--border-radius-md)" }}>
-            {v === "day" ? "Vista diaria" : "Vista equipo"}
+            {label}
           </button>
         ))}
       </div>
@@ -372,6 +386,21 @@ export default function App() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {view === "links" && (
+        <div>
+          {LINKS.map(link => (
+            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--color-background-primary)", border: `0.5px solid ${link.highlight ? "#185FA5" : "var(--color-border-tertiary)"}`, borderRadius: "var(--border-radius-lg)", padding: "12px 16px", marginBottom: 8, textDecoration: "none", gap: 12 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: link.highlight ? 500 : 400, color: link.highlight ? "#185FA5" : "var(--color-text-primary)" }}>{link.label}</p>
+                {link.note && <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--color-text-tertiary)" }}>{link.note}</p>}
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </a>
+          ))}
         </div>
       )}
 

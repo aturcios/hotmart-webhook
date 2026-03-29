@@ -1,11 +1,18 @@
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
 const cors = require("cors");
 const crypto = require("crypto");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve React build
+const PUBLIC_DIR = path.join(__dirname, "public");
+if (fs.existsSync(PUBLIC_DIR)) {
+  app.use(express.static(PUBLIC_DIR));
+}
 
 const DATA_FILE = "./sales.json";
 const HOTMART_SECRET = process.env.HOTMART_SECRET || "tu_secret_aqui";
@@ -85,8 +92,14 @@ app.get("/api/sales", (req, res) => {
   });
 });
 
-// Health check
-app.get("/", (req, res) => res.json({ status: "ok", message: "Hotmart Webhook Server activo" }));
+// Health check (only if no React build)
+app.get("/", (req, res) => {
+  if (fs.existsSync(path.join(PUBLIC_DIR, "index.html"))) {
+    res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+  } else {
+    res.json({ status: "ok", message: "Hotmart Webhook Server activo" });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));

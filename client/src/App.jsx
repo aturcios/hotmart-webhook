@@ -19,6 +19,14 @@ function useCountdown(target) {
   return { days, hours, mins, secs, launched: timeLeft <= 0 };
 }
 
+const SOCIAL = [
+  { label: "Facebook", url: "https://www.facebook.com/MotoRPMPro", color: "#1877F2", bg: "#E7F0FD" },
+  { label: "Instagram", url: "https://www.instagram.com/motorpmpro/", color: "#E1306C", bg: "#FCE8F0" },
+  { label: "TikTok", url: "https://www.tiktok.com/@motorpmpro", color: "#010101", bg: "#F0F0F0" },
+  { label: "YouTube", url: "https://www.youtube.com/@MotoRPMPro", color: "#FF0000", bg: "#FFE8E8" },
+  { label: "Pinterest", url: "https://www.pinterest.com/motorpmpro/", color: "#E60023", bg: "#FCE8EA" },
+];
+
 const LINKS = [
   { label: "VSL — Público frío (recomendado)", url: "https://go.hotmart.com/D105102229U?ap=5050", highlight: true },
   { label: "Página de ventas", url: "https://go.hotmart.com/D105102229U" },
@@ -409,7 +417,7 @@ export default function App() {
 
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: "1rem" }}>
-        {[["day", "Vista diaria"], ["overview", "Vista equipo"], ["links", "Enlaces"]].map(([v, label]) => (
+        {[["day", "Vista diaria"], ["overview", "Vista equipo"], ["links", "Enlaces"], ["social", "Redes Sociales"]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)}
             style={{ padding: "6px 16px", fontSize: 13, background: view === v ? "#185FA5" : "transparent", color: view === v ? "#fff" : "var(--color-text-secondary)", border: `0.5px solid ${view === v ? "#185FA5" : "var(--color-border-secondary)"}`, borderRadius: "var(--border-radius-md)" }}>
             {label}
@@ -532,6 +540,24 @@ export default function App() {
                   {copied === link.url ? "Copiado" : "Copiar"}
                 </button>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ alignSelf: "center" }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {view === "social" && (
+        <div>
+          {SOCIAL.map(s => (
+            <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: s.bg, border: `0.5px solid ${s.color}30`, borderRadius: "var(--border-radius-lg)", padding: "14px 16px", marginBottom: 8, textDecoration: "none", gap: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: s.color }}>{s.label}</span>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={e => { e.preventDefault(); copyLink(s.url); }}
+                  style={{ padding: "4px 10px", fontSize: 11, background: copied === s.url ? "#1D9E75" : "#fff", color: copied === s.url ? "#fff" : "#555", border: "none", borderRadius: 4 }}>
+                  {copied === s.url ? "Copiado" : "Copiar"}
+                </button>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ alignSelf: "center" }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke={s.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
             </a>
           ))}

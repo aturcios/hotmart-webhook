@@ -78,6 +78,23 @@ app.post("/webhook/hotmart", (req, res) => {
   res.status(200).json({ received: true });
 });
 
+// API — YouTube subscriber count (key stays server-side)
+app.get("/api/social", async (req, res) => {
+  const key = process.env.YOUTUBE_API_KEY;
+  const channelId = process.env.YOUTUBE_CHANNEL_ID;
+  if (!key || !channelId) return res.json({ youtube: null });
+
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${key}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    const subscribers = data?.items?.[0]?.statistics?.subscriberCount ?? null;
+    res.json({ youtube: subscribers ? parseInt(subscribers) : null });
+  } catch {
+    res.json({ youtube: null });
+  }
+});
+
 // API — el dashboard consulta esto para obtener las ventas
 app.get("/api/sales", (req, res) => {
   const sales = loadSales();

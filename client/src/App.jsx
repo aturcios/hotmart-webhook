@@ -305,7 +305,7 @@ export default function App() {
 
       {/* View toggle */}
       <div style={{ display: "flex", gap: 8, marginBottom: "1rem" }}>
-        {[["day", "Vista diaria"], ["overview", "Vista equipo"], ["links", "Links"]].map(([v, label]) => (
+        {[["day", "Vista diaria"], ["overview", "Vista equipo"], ["links", "Enlaces"]].map(([v, label]) => (
           <button key={v} onClick={() => setView(v)}
             style={{ padding: "6px 16px", fontSize: 13, background: view === v ? "#185FA5" : "transparent", color: view === v ? "#fff" : "var(--color-text-secondary)", border: `0.5px solid ${view === v ? "#185FA5" : "var(--color-border-secondary)"}`, borderRadius: "var(--border-radius-md)" }}>
             {label}

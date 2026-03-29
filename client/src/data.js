@@ -9,10 +9,10 @@ export const PLATFORM_COLORS = {
 };
 
 export const MEMBERS = [
-  { id: 0, name: "Líder",     initials: "LI", color: "#185FA5", bg: "#E6F1FB", role: "Estratega & Creador Principal", skills: ["Marketing","Redes sociales","Diseño","Video","IA","Canva"] },
-  { id: 1, name: "Miembro 2", initials: "M2", color: "#0F6E56", bg: "#E1F5EE", role: "Diseño & Edición",              skills: ["Canva","Edición de video/imagen","Computadora avanzada"] },
-  { id: 2, name: "Miembro 3", initials: "M3", color: "#854F0B", bg: "#FAEEDA", role: "Ejecutor de Tareas",            skills: ["Videojuegos","Seguir instrucciones","PC/Teléfono básico"] },
-  { id: 3, name: "Miembro 4", initials: "M4", color: "#993556", bg: "#FBEAF0", role: "Promotor en Redes",            skills: ["Redes sociales","Mucho tiempo disponible"] },
+  { id: 0, name: "Alex",      initials: "AL", color: "#185FA5", bg: "#E6F1FB", role: "Estratega & Creador Principal", skills: ["Marketing","Redes sociales","Diseño","Video","IA","Canva"] },
+  { id: 1, name: "Alexandra", initials: "AX", color: "#0F6E56", bg: "#E1F5EE", role: "Diseño & Edición",              skills: ["Canva","Edición de video/imagen","Computadora avanzada"] },
+  { id: 2, name: "Rigo",      initials: "RI", color: "#854F0B", bg: "#FAEEDA", role: "Ejecutor de Tareas",            skills: ["Videojuegos","Seguir instrucciones","PC/Teléfono básico"] },
+  { id: 3, name: "Franci",    initials: "FR", color: "#993556", bg: "#FBEAF0", role: "Promotor en Redes",            skills: ["Redes sociales","Mucho tiempo disponible"] },
 ];
 
 export const WEEKLY_GOALS = [

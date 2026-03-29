@@ -2,6 +2,22 @@ import { useState, useEffect } from "react";
 
 const API = "/api/sales";
 const POLL_INTERVAL = 30000; // 30 seconds
+const PASSWORD = "22301938";
+const LAUNCH_DATE = new Date("2026-04-01T00:00:00");
+
+function useCountdown(target) {
+  const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target - Date.now()));
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const t = setInterval(() => setTimeLeft(Math.max(0, target - Date.now())), 1000);
+    return () => clearInterval(t);
+  }, [target, timeLeft]);
+  const days = Math.floor(timeLeft / 86400000);
+  const hours = Math.floor((timeLeft % 86400000) / 3600000);
+  const mins = Math.floor((timeLeft % 3600000) / 60000);
+  const secs = Math.floor((timeLeft % 60000) / 1000);
+  return { days, hours, mins, secs, launched: timeLeft <= 0 };
+}
 
 const LINKS = [
   { label: "VSL — Público frío (recomendado)", url: "https://go.hotmart.com/D105102229U?ap=5050", highlight: true },
@@ -145,11 +161,25 @@ function addDays(date, n) {
 }
 
 export default function App() {
+  const [auth, setAuth] = useState(() => localStorage.getItem("dash_auth") === "1");
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [started, setStarted] = useState(false);
   const [currentDay, setCurrentDay] = useState(1);
   const [completed, setCompleted] = useState({});
   const [view, setView] = useState("day");
+  const countdown = useCountdown(LAUNCH_DATE.getTime());
+
+  function submitPassword() {
+    if (pwInput === PASSWORD) {
+      localStorage.setItem("dash_auth", "1");
+      setAuth(true);
+    } else {
+      setPwError(true);
+      setTimeout(() => setPwError(false), 1500);
+    }
+  }
 
   // Live sales data from API
   const [salesData, setSalesData] = useState({ count: 0, totalRevenue: 0, totalCommission: 0, sales: [] });
@@ -219,6 +249,56 @@ export default function App() {
     : 0;
 
   const overallProgress = Math.round(((currentDay - 1) / 30) * 100);
+
+  if (!auth) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f0f4f9", padding: "1rem" }}>
+        <div style={{ maxWidth: 460, width: "100%", background: "#fff", borderRadius: 14, padding: "2rem", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+          {/* Logo */}
+          <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#E6F1FB", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.2rem" }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#185FA5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+
+          <h1 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 600, color: "#111" }}>Dashboard Afiliados</h1>
+          <p style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500, color: "#185FA5" }}>Mecánica de Motos VIP</p>
+          <p style={{ margin: "0 0 1.5rem", fontSize: 13, color: "#666", lineHeight: 1.6 }}>
+            Panel privado del equipo afiliado. Aquí coordinamos las tareas diarias de los 4 miembros durante los 30 días de campaña, hacemos seguimiento de ventas en tiempo real y accedemos a todos los enlaces y materiales del producto.
+          </p>
+
+          {/* Countdown */}
+          {!countdown.launched && (
+            <div style={{ background: "#f0f4f9", borderRadius: 10, padding: "1rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <p style={{ margin: "0 0 10px", fontSize: 12, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Lanzamiento en</p>
+              <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                {[["días", countdown.days], ["horas", countdown.hours], ["min", countdown.mins], ["seg", countdown.secs]].map(([label, val]) => (
+                  <div key={label} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#185FA5", minWidth: 44, lineHeight: 1 }}>{String(val).padStart(2, "0")}</div>
+                    <div style={{ fontSize: 11, color: "#999", marginTop: 3 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: "10px 0 0", fontSize: 12, color: "#aaa" }}>1 de abril de 2026</p>
+            </div>
+          )}
+
+          {/* Password */}
+          <label style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 6 }}>Contraseña de acceso</label>
+          <input
+            type="password" value={pwInput}
+            onChange={e => setPwInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && submitPassword()}
+            placeholder="••••••••"
+            style={{ marginBottom: 10, borderColor: pwError ? "#e53e3e" : undefined }}
+          />
+          {pwError && <p style={{ margin: "0 0 8px", fontSize: 12, color: "#e53e3e" }}>Contraseña incorrecta</p>}
+          <button onClick={submitPassword}
+            style={{ width: "100%", padding: "10px", background: "#185FA5", color: "#fff", border: "none", borderRadius: "var(--border-radius-md)", fontSize: 14, fontWeight: 500 }}>
+            Entrar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!started) {
     return (

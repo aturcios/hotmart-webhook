@@ -6,7 +6,7 @@ import ResourcesTab from "./ResourcesTab";
 const API = "/api/sales";
 const POLL_INTERVAL = 30000;
 const PASSWORD = "22301938";
-const LAUNCH_DATE = new Date("2026-04-01T00:00:00");
+const LAUNCH_DATE = new Date("2026-05-05T00:00:00");
 
 function useCountdown(target) {
   const [timeLeft, setTimeLeft] = useState(() => Math.max(0, target - Date.now()));
